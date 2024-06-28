@@ -94,3 +94,23 @@ game.subscribeToEvent("playerSetsAvailability", (data, context) => {
     handleGathNotif(context.player.name, false);
   }
 });
+
+game.subscribeToEvent("playerInteractsWithObject", (data, context) => {
+  const playerName = context?.player?.name;
+  const objectId = data?.playerInteractsWithObject?.key;
+  const bird = context?.map?.objects?.[objectId];
+  const message = bird?.properties?.message;
+
+  if (bird._name === "Calling bird") {
+    fetch(`https://ntfy.sh/${NOTIFICATION_KEY}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Title": "Gath Status",
+        "Tags": "grapes",
+      },
+      body: `${playerName} says ${message}`,
+    });
+  }
+});
+
