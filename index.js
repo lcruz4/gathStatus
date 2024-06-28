@@ -12,20 +12,20 @@ const handleGathNotif = (playerName, isInGath) => {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Title": "Gath Status",
-      "Tags": "grapes",
+      Title: "Gath Status",
+      Tags: "grapes",
     },
-    body: isInGath ? `${playerName} is on da gathz! 🥳` : `${playerName} left gathz! 😭`,
+    body: isInGath
+      ? `${playerName} is on da gathz! 🥳`
+      : `${playerName} left gathz! 😭`,
   });
-}
+};
 
 /**** setup ****/
 
 // what's going on here is better explained in the docs:
 // https://gathertown.notion.site/Gather-Websocket-API-bf2d5d4526db412590c3579c36141063
-const game = new Game(ROOM_KEY, () =>
-  Promise.resolve({ apiKey: API_KEY })
-);
+const game = new Game(ROOM_KEY, () => Promise.resolve({ apiKey: API_KEY }));
 // replace with your spaceId of choice ^^^^^^^^^^^
 game.connect();
 game.subscribeToConnection((connected) => console.log("connected?", connected));
@@ -99,18 +99,19 @@ game.subscribeToEvent("playerInteractsWithObject", (data, context) => {
   const playerName = context?.player?.name;
   const objectId = data?.playerInteractsWithObject?.key;
   const bird = context?.map?.objects?.[objectId];
-  const message = bird?.properties?.message ?? "... nothing! This bish forgot to make the bird a note!";
+  const message =
+    bird?.properties?.message ??
+    "... nothing! This bish forgot to make the bird a note!";
 
   if (bird._name === "Calling bird") {
     fetch(`https://ntfy.sh/${NOTIFICATION_KEY}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Title": "Gath Status",
-        "Tags": "grapes",
+        Title: "Gath Status",
+        Tags: "grapes",
       },
       body: `${playerName} says ${message}`,
     });
   }
 });
-
