@@ -99,7 +99,7 @@ game.subscribeToEvent("playerInteractsWithObject", (data, context) => {
   const playerName = context?.player?.name;
   const objectId = data?.playerInteractsWithObject?.key;
   const bird = context?.map?.objects?.[objectId];
-  const message = bird?.properties?.message;
+  const message = bird?.properties?.message ?? "... nothing! This bish forgot to make the bird a note!";
 
   if (bird._name === "Calling bird") {
     fetch(`https://ntfy.sh/${NOTIFICATION_KEY}`, {

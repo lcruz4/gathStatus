@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@gathertown/gather-game-client": "^43.0.1",
+    "isomorphic-ws": "^5.0.0",
+    "ws": "^8.17.1"
+  }
+}
