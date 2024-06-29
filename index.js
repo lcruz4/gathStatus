@@ -1,6 +1,6 @@
-const { API_KEY, ROOM_KEY, NOTIFICATION_KEY } = require("./env");
-const { Game } = require("@gathertown/gather-game-client");
-global.WebSocket = require("isomorphic-ws");
+const { API_KEY, ROOM_KEY, NOTIFICATION_KEY } = require('./env');
+const { Game } = require('@gathertown/gather-game-client');
+global.WebSocket = require('isomorphic-ws');
 
 let joinQ = [];
 const statusMap = {};
@@ -10,30 +10,27 @@ const removeFromJoinQ = (playerId) => {
 
 const logError = (message) => {
   fetch(`https://ntfy.sh/${NOTIFICATION_KEY.admin}`, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
-      Title: "Gath error log",
-      Tags: "gear",
+      'Content-Type': 'application/json',
+      Title: 'Gath error log',
+      Tags: 'gear',
     },
     body: message,
   });
 };
 
-const sendNotif = ({
-  playerId,
-  title,
-  tags,
-  message
-}) => {
-  const notifKeysToNotify = Object.keys(NOTIFICATION_KEY).filter(key => key !== "admin" && key !== playerId);
+const sendNotif = ({ playerId, title, tags, message }) => {
+  const notifKeysToNotify = Object.keys(NOTIFICATION_KEY).filter(
+    (key) => key !== 'admin' && key !== playerId
+  );
   for (const notifId of notifKeysToNotify) {
     fetch(`https://ntfy.sh/${NOTIFICATION_KEY[notifId]}`, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
-        Title: title || "Gath Status",
-        Tags: tags || "grapes",
+        'Content-Type': 'application/json',
+        Title: title || 'Gath Status',
+        Tags: tags || 'grapes',
       },
       body: message,
     });
@@ -41,8 +38,10 @@ const sendNotif = ({
 };
 
 const handleGathNotif = ({ id, name, message, isInGath }) => {
-  if (typeof isInGath === "undefined" && !message) {
-    logError(`must pass isInGath or message! id: ${id}, name: ${name}, isInGath: ${isInGath}, message: ${message}.`);
+  if (typeof isInGath === 'undefined' && !message) {
+    logError(
+      `must pass isInGath or message! id: ${id}, name: ${name}, isInGath: ${isInGath}, message: ${message}.`
+    );
   } else if (message) {
     sendNotif({
       playerId: id,
@@ -51,7 +50,9 @@ const handleGathNotif = ({ id, name, message, isInGath }) => {
   } else {
     sendNotif({
       playerId: id,
-      message: isInGath ? `${name} is on da gathz! 🥳` : `${name} left gathz! 😭`,
+      message: isInGath
+        ? `${name} is on da gathz! 🥳`
+        : `${name} left gathz! 😭`,
     });
   }
 };
@@ -63,11 +64,11 @@ const handleGathNotif = ({ id, name, message, isInGath }) => {
 const game = new Game(ROOM_KEY, () => Promise.resolve({ apiKey: API_KEY }));
 // replace with your spaceId of choice ^^^^^^^^^^^
 game.connect();
-game.subscribeToConnection((connected) => console.log("connected?", connected));
+game.subscribeToConnection((connected) => console.log('connected?', connected));
 
 /**** the good stuff ****/
 
-game.subscribeToEvent("playerSetsName", (data, context) => {
+game.subscribeToEvent('playerSetsName', (data, context) => {
   const lastJoinEv = joinQ
     .filter((e) => e.playerId === context.playerId)
     .at(-1);
@@ -75,7 +76,7 @@ game.subscribeToEvent("playerSetsName", (data, context) => {
 
   if (lastJoinEv) {
     lastJoinEv.name = data.playerSetsName.name;
-    if (lastJoinEv.name && playerStatus && playerStatus !== "DoNotDisturb") {
+    if (lastJoinEv.name && playerStatus && playerStatus !== 'DoNotDisturb') {
       handleGathNotif({
         id: context.player.id,
         name: data.playerSetsName.name,
@@ -86,15 +87,15 @@ game.subscribeToEvent("playerSetsName", (data, context) => {
   }
 });
 
-game.subscribeToEvent("playerJoins", (_data, context) =>
+game.subscribeToEvent('playerJoins', (_data, context) =>
   joinQ.push({
     playerId: context.playerId,
     name: null,
   })
 );
 
-game.subscribeToEvent("playerExits", (_data, context) => {
-  if (statusMap[context.playerId] !== "DoNotDisturb") {
+game.subscribeToEvent('playerExits', (_data, context) => {
+  if (statusMap[context.playerId] !== 'DoNotDisturb') {
     handleGathNotif({
       id: context.player.id,
       name: context.player.name,
@@ -105,7 +106,7 @@ game.subscribeToEvent("playerExits", (_data, context) => {
   statusMap[context.playerId] = null;
 });
 
-game.subscribeToEvent("playerSetsAvailability", (data, context) => {
+game.subscribeToEvent('playerSetsAvailability', (data, context) => {
   const lastJoinEv = joinQ
     .filter((e) => e.playerId === context.playerId)
     .at(-1);
@@ -114,7 +115,7 @@ game.subscribeToEvent("playerSetsAvailability", (data, context) => {
   statusMap[context.playerId] = playerStatus;
 
   if (lastJoinEv) {
-    if (lastJoinEv.name && playerStatus !== "DoNotDisturb") {
+    if (lastJoinEv.name && playerStatus !== 'DoNotDisturb') {
       removeFromJoinQ(context.playerId);
 
       handleGathNotif({
@@ -127,8 +128,8 @@ game.subscribeToEvent("playerSetsAvailability", (data, context) => {
 
   if (
     !lastJoinEv &&
-    previousStatus === "DoNotDisturb" &&
-    playerStatus !== "DoNotDisturb"
+    previousStatus === 'DoNotDisturb' &&
+    playerStatus !== 'DoNotDisturb'
   ) {
     handleGathNotif({
       id: context.player.id,
@@ -139,8 +140,8 @@ game.subscribeToEvent("playerSetsAvailability", (data, context) => {
 
   if (
     previousStatus &&
-    previousStatus !== "DoNotDisturb" &&
-    playerStatus === "DoNotDisturb"
+    previousStatus !== 'DoNotDisturb' &&
+    playerStatus === 'DoNotDisturb'
   ) {
     handleGathNotif({
       id: context.player.id,
@@ -150,17 +151,17 @@ game.subscribeToEvent("playerSetsAvailability", (data, context) => {
   }
 });
 
-game.subscribeToEvent("playerInteractsWithObject", (data, context) => {
-  console.log(JSON.stringify(game.players, null))
+game.subscribeToEvent('playerInteractsWithObject', (data, context) => {
+  console.log(JSON.stringify(game.players, null));
   debugger;
   const playerName = context?.player?.name;
   const objectId = data?.playerInteractsWithObject?.key;
   const bird = context?.map?.objects?.[objectId];
   const message =
     bird?.properties?.message ??
-    "... nothing! This bish forgot to make the bird a note!";
+    '... nothing! This bish forgot to make the bird a note!';
 
-  if (bird._name === "Calling bird") {
+  if (bird._name === 'Calling bird') {
     handleGathNotif({
       id: context.player.id,
       name: playerName,
