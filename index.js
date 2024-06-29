@@ -1,4 +1,4 @@
-const { API_KEY, ROOM_KEY, NOTIFICATION_KEY } = require('./env');
+const { API_KEY, ROOM_KEY, NOTIFICATION_KEYS } = require('./env');
 const { Game } = require('@gathertown/gather-game-client');
 global.WebSocket = require('isomorphic-ws');
 
@@ -9,7 +9,7 @@ const removeFromJoinQ = (playerId) => {
 };
 
 const logError = (message) => {
-  fetch(`https://ntfy.sh/${NOTIFICATION_KEY.admin}`, {
+  fetch(`https://ntfy.sh/${NOTIFICATION_KEYS.admin}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -21,11 +21,11 @@ const logError = (message) => {
 };
 
 const sendNotif = ({ playerId, title, tags, message }) => {
-  const notifKeysToNotify = Object.keys(NOTIFICATION_KEY).filter(
+  const notifKeysToNotify = Object.keys(NOTIFICATION_KEYS).filter(
     (key) => key !== 'admin' && key !== playerId
   );
   for (const notifId of notifKeysToNotify) {
-    fetch(`https://ntfy.sh/${NOTIFICATION_KEY[notifId]}`, {
+    fetch(`https://ntfy.sh/${NOTIFICATION_KEYS[notifId]}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
