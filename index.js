@@ -152,8 +152,6 @@ game.subscribeToEvent('playerSetsAvailability', (data, context) => {
 });
 
 game.subscribeToEvent('playerInteractsWithObject', (data, context) => {
-  console.log(JSON.stringify(game.players, null));
-  debugger;
   const playerName = context?.player?.name;
   const objectId = data?.playerInteractsWithObject?.key;
   const bird = context?.map?.objects?.[objectId];
